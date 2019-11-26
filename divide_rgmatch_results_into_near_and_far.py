@@ -5,6 +5,7 @@ logging.basicConfig(level=logging.INFO)
 with open(sys.argv[1]) as f:
     for i, line in enumerate(f):
         if i == 0:
+            print(line.strip())
             continue
     
         if i % 1000 == 0:
