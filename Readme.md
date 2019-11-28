@@ -4,6 +4,14 @@ target gene-specific manner through an agonist-modulated LBD-
 LID interaction**.
 
 ## Prerequisites
+### Data
+* The mm9 reference genome, downloaded [from here](https://hgdownload.soe.ucsc.edu/goldenPath/mm9/bigZips/mm9.2bit) and converted to fasta. Needs to be indexed with `bwa index`.
+* LXR raw reads (downloaded from the NCBI SRA archive with SRA ID [SRX118172](https://www.ncbi.nlm.nih.gov/sra?term=SRX118172))
+* ChREBP sequencing reads (not available online, these were provided to us by by Prof. Lawrence Chan)
+* mm9 blacklisted regions, [available here](http://mitra.stanford.edu/kundaje/akundaje/release/blacklists/mm9-mouse/mm9-blacklist.bed.gz)
+* PPARalpha peaks downloaded from [this NCBI GEO archive](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM864671)
+* FXR peaks downloaded from [this NCBI GEO archive](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM1899651)
+
 ### Software
 The following software are needed:
 * MACS2 (for peak calling)
@@ -11,19 +19,17 @@ The following software are needed:
 * Python3 (for analysis)
 * [Rgmatch](https://bitbucket.org/pfurio/rgmatch/src) (to associate transcription factors to genes and gene elements)
 
-## Data
-All the necessary data (raw reads, mapping indexes etc) for running the scripts below are available at Zenodo by following this link. 
-The only exception is the mapped ChREBP reads, which were were kindly provided to us by Prof. Lawrence Chan.
-
 ## Scripts for reproducing the analysis
 ### Step 1: Run peak calling
-The following scripts run peak calling for all the transcription factors. This script assumes you have two files `chrebp_sample_reads.bed`  and `chrebp_control_reads.bed` in this directory (these are not availale through the Zenodo data repository).
+The following scripts run peak calling for LXR and ChREBP. For PPARalpha and FXR, called peaks available at NCBI were used in the analysis, since these already were called using the same pipeline that we use here.
+
+The following script assumes you have two files `chrebp_sample_reads.bed`  and `chrebp_control_reads.bed` in this directory.
 
 ```bash
 ./run_chrepb_peak_calling.sh
 ```
 
-For LXR, the raw reads are available through the Zenodo data repository. We map these to the MM9 reference genome with the following script:
+For LXR, the raw reads are downloaded from NCBI SRA archive (see link at the top). We map these to the MM9 reference genome with the following script:
 ```bash
 ./map_lxr_reads.sh
 ```
@@ -36,6 +42,10 @@ After mapping, this script performs the peak calling:
 ### Step 2: Find pairs of close ChREBP and LXR peaks
 
 The following script finds pairs of close ChREBP and LXR peaks:
+```bash
+./find_close_tf_peaks.sh
+```
+The resulting file `tfs_close.bed` contains the pairs of close transcription factors.
 
 ### Step 3: Run Rgmatch
 ```bash
@@ -49,3 +59,4 @@ python3 add_peak_distance_to_gene_associtaions.py tfs_close.bed gene_association
 ```
 
 The final csv file `gene_associations_gene_level_with_peak_to_peak_distance.csv` is used to generated Figure 1.
+
